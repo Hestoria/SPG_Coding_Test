@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import BGIMG from './img/bg_img.png';
 import Charts  from './Charts';
 
+
+
 function App() {
   const [datatype, setdatatype] = useState('water');
   const [label, setlabel] = useState('water');
@@ -44,46 +46,52 @@ function App() {
      fontWeight: 'bold'
     }
   }
-  useEffect(() => {
+  const fetchData = () => {
     let URL = `http://[::1]:3000/${datatype}-bill-data`;
     let FILTER = `?filter[where][year][between][0]=${StartDate.getFullYear()}&filter[where][year][between][1]=${EndDate.getFullYear()}&filter[where][month][between][0]=${StartDate.getMonth()}&filter[where][month][between][1]=${EndDate.getMonth()}`;
     //fetch data form backend
     fetch(URL+FILTER)
       .then((response) => response.json())
       .then((datas) =>{
-        //group the data by key ( month/year )
-        const mappingdata = new Map();
-        datas.forEach((data)=>{
-          var temp;
-          if(datatype === 'gas'){
-              temp = Number(data.g_j_consumption);
-              setlabel('Consumption (gj)');
-          }else if(datatype === 'electricity'){
-              temp = Number(data.k_wh_consumption);
-              setlabel('Consumption (kwh)');
-          }else{
-              temp = Number(data.m_3_consumption);
-              setlabel('Consumption (m^3)');
-          }
-
-          if(mappingdata.get(data.month+'/'+data.year)){
-            mappingdata.set(data.month+'/'+data.year, Number(mappingdata.get(data.month+'/'+data.year)) + temp);
-          }else{
-            mappingdata.set(data.month+'/'+data.year, temp);
-          }
-        })
-        // create a temp list and push to state
-        var seriesData = [];
-        var xAxisCategories = [];
-        mappingdata.forEach((val,key)=>{
-          seriesData.push(val);
-          xAxisCategories.push(key);
-        })
-        // push in to state
-        setdatalist({mapedData:{seriesData,xAxisCategories}});
+        mapedData(datas);
       })
       .catch((err)=> console.log(err));
-    }
+  }
+  const mapedData = (datas) => {
+    const mappingdata = new Map();
+    datas.forEach((data)=>{
+      var temp;
+      if(datatype === 'gas'){
+          temp = Number(data.g_j_consumption);
+          setlabel('Consumption (gj)');
+      }else if(datatype === 'electricity'){
+          temp = Number(data.k_wh_consumption);
+          setlabel('Consumption (kwh)');
+      }else{
+          temp = Number(data.m_3_consumption);
+          setlabel('Consumption (m^3)');
+      }
+  
+      if(mappingdata.get(data.month+'/'+data.year)){
+        mappingdata.set(data.month+'/'+data.year, Number(mappingdata.get(data.month+'/'+data.year)) + temp);
+      }else{
+        mappingdata.set(data.month+'/'+data.year, temp);
+      }
+    })
+    // create a temp list and push to state
+    var seriesData = [];
+    var xAxisCategories = [];
+    mappingdata.forEach((val,key)=>{
+      seriesData.push(val);
+      xAxisCategories.push(key);
+    })
+    // push in to state
+    setdatalist({mapedData:{seriesData,xAxisCategories}});
+  }
+  
+  useEffect(() => {
+    fetchData();
+  }
   , [datatype,StartDate,EndDate])
 
   return (
