@@ -6,8 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import BGIMG from './img/bg_img.png';
 import Charts  from './Charts';
 
-
-
 function App() {
   const [datatype, setdatatype] = useState('water');
   const [label, setlabel] = useState('water');
@@ -79,12 +77,9 @@ function App() {
       }
     })
     // create a temp list and push to state
-    var seriesData = [];
-    var xAxisCategories = [];
-    mappingdata.forEach((val,key)=>{
-      seriesData.push(val);
-      xAxisCategories.push(key);
-    })
+    const xAxisCategories = Array.from(mappingdata.keys())
+    const seriesData = Array.from(mappingdata.values())
+
     // push in to state
     setdatalist({mapedData:{seriesData,xAxisCategories}});
   }
